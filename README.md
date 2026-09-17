@@ -27,7 +27,7 @@ cd jobfuk
 ```bash
 ./run.sh
 ```
-*`run.sh` runs the whole thing. If you didnt create the Python virtual environment or installed all dependencies this script detectes and does everything for you. you can always run this and the whole thing just works.*
+*`run.sh` runs the whole thing. If you didnt create the Python virtual environment or installed all dependencies this script detects that and does everything for you. you can always run this and the whole thing just works.*
 
 ### 3. Open in browser
 Open your browser and navigate to:
