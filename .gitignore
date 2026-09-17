@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# SQLite databases & local user data
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/resume.json
+!data/default_resume.json
+
+# Local user resume documents (preserve docs/images for screenshots)
+docs/*.pdf
+docs/*.docx
+docs/*.doc
+!docs/images/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs & test artifacts
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+tmp/

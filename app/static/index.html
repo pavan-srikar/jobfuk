@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JOB RADAR | LinkedIn ATS & Fit Matcher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css?v=4">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Radar Banner -->
+    <header class="radar-header">
+      <div class="header-branding">
+        <div class="radar-logo-badge">
+          <span class="radar-pulse"></span>
+          <span class="radar-icon">🚀</span>
+        </div>
+        <div>
+          <h1 class="radar-title">JOB RADAR</h1>
+          <p class="radar-subtitle">Cloud / DevOps / SRE • Intelligent ATS &amp; Fit Engine</p>
+        </div>
+      </div>
+
+      <div class="header-stats-bar">
+        <div class="stat-pill" id="stat-total-jobs">
+          <span class="stat-num">0</span>
+          <span class="stat-label">Jobs Found</span>
+        </div>
+        <div class="stat-pill" id="stat-unique-jobs">
+          <span class="stat-num">0</span>
+          <span class="stat-label">Unique</span>
+        </div>
+        <div class="stat-pill" id="stat-high-priority">
+          <span class="stat-num highlight">0</span>
+          <span class="stat-label">High Priority</span>
+        </div>
+        <div class="stat-pill" id="stat-avg-ats">
+          <span class="stat-num">0%</span>
+          <span class="stat-label">Avg ATS</span>
+        </div>
+        <div class="stat-pill ollama-pill" id="ollama-status-pill" title="Checking Ollama...">
+          <span class="status-dot"></span>
+          <span class="stat-label" id="ollama-status-text">Ollama: Checking...</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-primary" id="btn-open-scrape-modal">
+          <span class="btn-icon">⚡</span> Run Scraper
+        </button>
+        <button class="btn btn-secondary" id="btn-open-resume-modal">
+          <span class="btn-icon">📄</span> My Resume
+        </button>
+        <button class="btn btn-icon-only" id="btn-rescore-all" title="Re-score all jobs against resume">
+          🔄
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="main-content">
+      <!-- Sidebar Filters -->
+      <aside class="filters-sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-header">
+            <h3>Filters</h3>
+            <button class="btn-text-link" id="btn-reset-filters">Reset</button>
+          </div>
+        </div>
+
+        <!-- Search input -->
+        <div class="filter-group">
+          <label class="filter-label">Search Keywords</label>
+          <div class="input-with-icon">
+            <span class="input-icon">🔍</span>
+            <input type="text" id="filter-keyword" placeholder="Title, company, skill...">
+          </div>
+        </div>
+
+        <!-- Priority Filter -->
+        <div class="filter-group">
+          <label class="filter-label">Application Priority</label>
+          <div class="button-group priority-group">
+            <button class="btn-pill active" data-priority="ALL">All</button>
+            <button class="btn-pill high" data-priority="HIGH">🔥 High</button>
+            <button class="btn-pill med" data-priority="MEDIUM">⚡ Med</button>
+            <button class="btn-pill low" data-priority="LOW">Low</button>
+          </div>
+        </div>
+
+        <!-- ATS Score Threshold -->
+        <div class="filter-group">
+          <div class="slider-header">
+            <label class="filter-label">Min ATS Score</label>
+            <span class="slider-value" id="val-min-ats">0%</span>
+          </div>
+          <input type="range" id="filter-min-ats" min="0" max="95" step="5" value="0" class="range-slider">
+          <div class="slider-ticks">
+            <span>0%</span>
+            <span>50%</span>
+            <span>75%</span>
+            <span>90%</span>
+          </div>
+        </div>
+
+        <!-- FIT Score Threshold -->
+        <div class="filter-group">
+          <div class="slider-header">
+            <label class="filter-label">Min Fit Score</label>
+            <span class="slider-value" id="val-min-fit">0%</span>
+          </div>
+          <input type="range" id="filter-min-fit" min="0" max="95" step="5" value="0" class="range-slider">
+          <div class="slider-ticks">
+            <span>0%</span>
+            <span>50%</span>
+            <span>75%</span>
+            <span>90%</span>
+          </div>
+        </div>
+
+        <!-- Strict Experience Cap -->
+        <div class="filter-group">
+          <label class="filter-label">Experience Cap (Strict)</label>
+          <select id="filter-max-exp" class="form-select" style="border-color: var(--accent-cyan); color: var(--accent-cyan); font-weight: 600;">
+            <option value="3" selected>🎯 Max 3 Years (Junior / 1-3 Yrs Only)</option>
+            <option value="2">🟢 Max 2 Years (Entry / Associate Only)</option>
+            <option value="5">🔵 Max 5 Years (Up to Mid-Level)</option>
+            <option value="all">⚪ No Cap (Show All Jobs)</option>
+          </select>
+        </div>
+
+        <!-- Work Mode -->
+        <div class="filter-group">
+          <label class="filter-label">Work Mode</label>
+          <select id="filter-work-mode" class="form-select">
+            <option value="all">All Modes</option>
+            <option value="remote">Remote Only</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="on-site">On-site</option>
+          </select>
+        </div>
+
+        <!-- Experience Level -->
+        <div class="filter-group">
+          <label class="filter-label">Seniority Level</label>
+          <select id="filter-experience" class="form-select">
+            <option value="all">All Levels</option>
+            <option value="entry">Entry Level</option>
+            <option value="associate">Associate / Mid</option>
+            <option value="mid-senior">Mid-Senior</option>
+            <option value="director">Director / Executive</option>
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="filter-group">
+          <label class="filter-label">Sort By</label>
+          <select id="filter-sort-by" class="form-select">
+            <option value="priority_desc">Priority (High to Low)</option>
+            <option value="ats_desc">ATS Score (Highest)</option>
+            <option value="fit_desc">Fit Score (Highest)</option>
+            <option value="date_desc">Date Scraped (Latest)</option>
+          </select>
+        </div>
+
+        <!-- Job Status -->
+        <div class="filter-group">
+          <label class="filter-label">Status</label>
+          <select id="filter-status" class="form-select">
+            <option value="new" selected>🎯 Radar (New)</option>
+            <option value="saved">⭐ Saved</option>
+            <option value="applied">💼 Applied</option>
+            <option value="rejected">🚫 Rejected</option>
+            <option value="ignored">🗑️ Dismissed</option>
+            <option value="all">📋 All Jobs</option>
+          </select>
+        </div>
+      </aside>
+
+      <!-- Main Radar Feed -->
+      <main class="jobs-stream">
+        <div class="stream-toolbar">
+          <!-- Feed Status Navigation Tabs -->
+          <div class="feed-tabs" id="feed-status-tabs">
+            <button class="feed-tab active" data-status="new" title="New unreviewed jobs on your radar">
+              🎯 Radar <span class="tab-count" id="count-tab-new">0</span>
+            </button>
+            <button class="feed-tab" data-status="saved" title="Jobs you starred">
+              ⭐ Saved <span class="tab-count" id="count-tab-saved">0</span>
+            </button>
+            <button class="feed-tab" data-status="applied" title="Jobs you have applied for">
+              💼 Applied <span class="tab-count" id="count-tab-applied">0</span>
+            </button>
+            <button class="feed-tab" data-status="rejected" title="Jobs where application was rejected">
+              🚫 Rejected <span class="tab-count" id="count-tab-rejected">0</span>
+            </button>
+            <button class="feed-tab" data-status="ignored" title="Dismissed and removed jobs">
+              🗑️ Dismissed <span class="tab-count" id="count-tab-ignored">0</span>
+            </button>
+            <button class="feed-tab" data-status="all" title="All jobs in database">
+              📋 All
+            </button>
+          </div>
+
+          <div class="active-profile-chip" id="profile-chip" title="Click to view/edit active resume">
+            <span class="chip-avatar">👤</span>
+            <span class="chip-text" id="chip-candidate-name">Loading Resume...</span>
+            <span class="chip-exp" id="chip-candidate-exp">1.0 yr</span>
+          </div>
+        </div>
+
+        <div class="stream-subbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 12px; color: var(--text-muted);">
+          <div class="results-count">
+            Showing <strong id="visible-count" style="color: var(--text-primary);">0</strong> matching jobs
+          </div>
+        </div>
+
+        <!-- Live Scraper Banner (shown when scraping) -->
+        <div class="scraper-banner hidden" id="scraper-banner">
+          <div class="banner-spinner"></div>
+          <div class="banner-text">
+            <strong id="scraper-banner-title">Scraper Active</strong>
+            <p id="scraper-banner-sub">Searching LinkedIn guest API...</p>
+          </div>
+        </div>
+
+        <!-- Cards Container -->
+        <div class="jobs-container" id="jobs-container">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-bar" id="pagination-bar">
+          <button class="btn btn-secondary" id="btn-prev-page" disabled>Previous</button>
+          <span class="page-indicator" id="page-indicator">Page 1</span>
+          <button class="btn btn-secondary" id="btn-next-page">Next</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- MODAL: Scrape Jobs -->
+  <div class="modal-backdrop hidden" id="scrape-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">🕷️</span>
+          <h2>Scrape LinkedIn Jobs</h2>
+        </div>
+        <button class="btn-close" id="btn-close-scrape-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-intro">
+          Scrapes real LinkedIn postings using the guest API with polite rate-limiting jitter.
+        </p>
+
+        <!-- Quick Presets -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" style="margin: 0;">Role Presets (Multi-Select for Mass Scale)</label>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="btn-xs" id="btn-select-all-presets" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--accent-cyan); font-size: 11px; padding: 2px 6px; border-radius: 4px; cursor: pointer;">Select All</button>
+              <button type="button" class="btn-xs" id="btn-clear-presets" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); color: var(--text-muted); font-size: 11px; padding: 2px 6px; border-radius: 4px; cursor: pointer;">Clear</button>
+            </div>
+          </div>
+          <div class="preset-buttons" id="multi-role-presets">
+            <button type="button" class="btn-preset active" data-role="Cloud Engineer">☁️ Cloud Engineer</button>
+            <button type="button" class="btn-preset active" data-role="DevOps Engineer">⚙️ DevOps Engineer</button>
+            <button type="button" class="btn-preset" data-role="Junior DevOps Engineer">🚀 Junior DevOps</button>
+            <button type="button" class="btn-preset" data-role="Azure Cloud Engineer">🔷 Azure Cloud Engineer</button>
+            <button type="button" class="btn-preset" data-role="AWS DevOps Engineer">🟧 AWS DevOps</button>
+            <button type="button" class="btn-preset" data-role="Site Reliability Engineer">🛡️ SRE</button>
+            <button type="button" class="btn-preset" data-role="Platform Engineer">🏗️ Platform Engineer</button>
+            <button type="button" class="btn-preset" data-role="Kubernetes Specialist">☸️ Kubernetes Specialist</button>
+          </div>
+          <div id="selected-roles-hint" style="font-size: 11px; color: var(--accent-cyan); margin-top: 4px;">
+            Selected: Cloud Engineer, DevOps Engineer (2 roles)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="scrape-keywords">Custom Keywords (Optional override if no presets selected)</label>
+          <input type="text" id="scrape-keywords" class="form-input" placeholder="e.g. Cloud Engineer">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label class="form-label" for="scrape-location">Location</label>
+            <input type="text" id="scrape-location" class="form-input" value="India">
+          </div>
+          <div class="form-group half">
+            <label class="form-label" for="scrape-posted">Posted Time</label>
+            <select id="scrape-posted" class="form-select">
+              <option value="r86400" selected>Past 24 Hours</option>
+              <option value="r604800">Past Week</option>
+              <option value="">Anytime</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label class="form-label" for="scrape-worktype">Work Type</label>
+            <select id="scrape-worktype" class="form-select">
+              <option value="" selected>Any (All)</option>
+              <option value="2">Remote Only</option>
+              <option value="3">Hybrid Only</option>
+              <option value="1">On-site Only</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label class="form-label" for="scrape-pages">Pages to Scrape per Role</label>
+            <select id="scrape-pages" class="form-select">
+              <option value="1">1 Page (~25 jobs)</option>
+              <option value="2">2 Pages (~50 jobs)</option>
+              <option value="3">3 Pages (~75 jobs)</option>
+              <option value="5" selected>5 Pages (~125 jobs - Mass Scale)</option>
+              <option value="10">10 Pages (~250 jobs - Deep Crawl)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="scrape-engine">Scraper Engine</label>
+          <select id="scrape-engine" class="form-select">
+            <option value="guest_api" selected>⚡ Fast Guest API (Direct &amp; Fast - Recommended)</option>
+            <option value="chromium">🌐 Chromium Browser (Headless Browser)</option>
+          </select>
+        </div>
+
+
+        <div class="scraper-status-box hidden" id="scrape-modal-status-box">
+          <div class="banner-spinner small"></div>
+          <span id="scrape-modal-status-text">Starting scraper...</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-scrape">Cancel</button>
+        <button class="btn btn-primary" id="btn-start-scrape">
+          <span class="btn-icon">🚀</span> Start Ingestion
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Resume Profile Manager -->
+  <div class="modal-backdrop hidden" id="resume-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-icon">📄</span>
+          <h2>Resume &amp; Candidate Profile</h2>
+        </div>
+        <button class="btn-close" id="btn-close-resume-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Resume Upload Section -->
+        <div class="upload-zone" id="resume-upload-zone">
+          <input type="file" id="resume-file-input" accept=".pdf,.txt,.md" style="display: none;">
+          <div class="upload-prompt" id="upload-prompt">
+            <span class="upload-icon">📥</span>
+            <p><strong>Click or Drag &amp; Drop</strong> your Resume (PDF or TXT)</p>
+            <span class="upload-hint">Automatically parses skills, experience, and certifications</span>
+          </div>
+          <div class="upload-loading hidden" id="upload-loading">
+            <div class="banner-spinner"></div>
+            <p>Extracting resume with parser...</p>
+          </div>
+        </div>
+
+        <hr class="modal-divider">
+
+        <!-- Structured Form -->
+        <div class="form-row">
+          <div class="form-group half">
+            <label class="form-label">Candidate Name / Title</label>
+            <input type="text" id="profile-name" class="form-input">
+          </div>
+          <div class="form-group half">
+            <label class="form-label">Total Experience (Years)</label>
+            <input type="number" step="0.5" id="profile-experience" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label class="form-label">Location</label>
+            <input type="text" id="profile-location" class="form-input">
+          </div>
+          <div class="form-group half">
+            <label class="form-label">Cloud Platforms (comma-separated)</label>
+            <input type="text" id="profile-clouds" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Technical Skills (comma-separated)</label>
+          <textarea id="profile-skills" class="form-textarea" rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label class="form-label">Certifications (comma-separated)</label>
+            <input type="text" id="profile-certs" class="form-input">
+          </div>
+          <div class="form-group half">
+            <label class="form-label">Education (comma-separated)</label>
+            <input type="text" id="profile-education" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Professional Summary</label>
+          <textarea id="profile-summary" class="form-textarea" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-resume">Close</button>
+        <button class="btn btn-primary" id="btn-save-profile">
+          <span class="btn-icon">💾</span> Save &amp; Re-Score All Jobs
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Job Details & Score Breakdown -->
+  <div class="modal-backdrop hidden" id="job-detail-modal">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div>
+          <div class="job-meta-tagline">
+            <span class="priority-badge" id="modal-priority-badge">HIGH PRIORITY</span>
+            <span class="ats-badge" id="modal-ats-badge">94% ATS</span>
+            <span class="fit-badge" id="modal-fit-badge">96% FIT</span>
+          </div>
+          <h2 id="modal-job-title" class="modal-job-title">Job Title</h2>
+          <div class="modal-job-subtitle" id="modal-job-subtitle">Company • Location • Work Mode</div>
+        </div>
+        <button class="btn-close" id="btn-close-job-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Score Breakdown Table -->
+        <div class="breakdown-section">
+          <h3 class="section-title">Score Breakdown</h3>
+          <div class="breakdown-grid" id="modal-breakdown-grid">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Concerns / Penalties -->
+          <div class="concerns-box hidden" id="modal-concerns-box">
+            <h4 class="concerns-title">⚠ Hard Requirements &amp; Flags:</h4>
+            <ul id="modal-concerns-list"></ul>
+          </div>
+        </div>
+
+        <!-- AI Insights / Ollama section -->
+        <div class="ai-analysis-section hidden" id="modal-ai-section">
+          <div class="ai-header">
+            <span class="ai-icon">🧠</span>
+            <h3>Ollama AI Deep Evaluation</h3>
+          </div>
+          <div class="ai-body" id="modal-ai-content"></div>
+        </div>
+
+        <!-- Full Job Description -->
+        <div class="description-section">
+          <h3 class="section-title">Job Description</h3>
+          <div class="jd-content" id="modal-jd-content"></div>
+        </div>
+      </div>
+      <div class="modal-footer split">
+        <div class="modal-status-actions">
+          <button class="btn btn-sm btn-outline" id="modal-btn-save">⭐ Save</button>
+          <button class="btn btn-sm btn-outline" id="modal-btn-applied">✓ Applied</button>
+          <button class="btn btn-sm btn-outline" id="modal-btn-rejected">🚫 Rejected</button>
+          <button class="btn btn-sm btn-outline" id="modal-btn-ignore">✕ Dismiss</button>
+        </div>
+        <div class="modal-right-actions">
+          <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary" id="modal-btn-linkedin">
+            Open on LinkedIn ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=4"></script>
+</body>
+</html>

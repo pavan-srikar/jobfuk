@@ -1,0 +1,36 @@
+{
+  "candidate_name": "Cloud / DevOps Engineer",
+  "target_roles": [
+    "Cloud Engineer",
+    "DevOps Engineer",
+    "Site Reliability Engineer",
+    "Platform Engineer"
+  ],
+  "years_experience": 1.0,
+  "location": "India",
+  "skills": [
+    "Azure",
+    "AWS",
+    "Kubernetes",
+    "Terraform",
+    "Docker",
+    "Linux",
+    "Python",
+    "CI/CD",
+    "Git",
+    "Bash",
+    "Prometheus",
+    "Grafana"
+  ],
+  "cloud_platforms": [
+    "Azure",
+    "AWS"
+  ],
+  "certifications": [
+    "AZ-104 Microsoft Azure Administrator"
+  ],
+  "education": [
+    "Bachelor of Technology in Computer Science"
+  ],
+  "summary": "Cloud and DevOps Engineer with hands-on experience in Azure, AWS, Kubernetes, Terraform, Docker, and CI/CD pipelines."
+}
