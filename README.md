@@ -1,8 +1,7 @@
 # jobfuk
 
-Automated LinkedIn job scraper, resume matcher, and application tracking radar for Cloud, DevOps, and SRE roles.
-
-Repo: https://github.com/pavan-srikar/jobfuk.git
+Automated LinkedIn job scraper, resume matcher, and application tracking radar for whatever jobs you are targeting.
+(In my case its Cloud, DevOps, and SRE)
 
 ---
 
@@ -28,7 +27,7 @@ cd jobfuk
 ```bash
 ./run.sh
 ```
-*`run.sh` automatically creates a Python virtual environment and installs all dependencies on first run.*
+*`run.sh` runs the whole thing. If you didnt create the Python virtual environment or installed all dependencies this script detectes and does everything for you. you can always run this and the whole thing just works.*
 
 ### 3. Open in browser
 Open your browser and navigate to:
